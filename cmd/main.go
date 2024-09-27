@@ -3,17 +3,18 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/JoeSheen/godo/internal/sqlite"
 	"github.com/JoeSheen/godo/internal/types"
-	"github.com/google/uuid"
 )
 
 func main() {
-	t := types.Task{ID: uuid.New().String(), Priority: types.Low, Title: "fkjsdfb"}
+	deadline := time.Now().AddDate(0, 18, 0)
+	t := types.Task{Priority: types.Low, Title: "fkjsdfb", Deadline: &deadline}
 	fmt.Println(t)
 
-	db, err := sqlite.NewSqlDB("database.db")
+	db, err := sqlite.NewSqlDB("app.db")
 	if err != nil {
 		log.Fatal(err)
 	}

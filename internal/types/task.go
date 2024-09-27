@@ -18,12 +18,12 @@ const (
 type CategoryType string
 
 type Task struct {
-	ID                 string
+	ID                 int
 	Title              string
 	Priority           Priority
 	Completed          bool
 	Category           CategoryType
 	CreatedTimestamp   time.Time
 	CompletedTimestamp *time.Time
-	Deadline           *time.Timer
+	Deadline           *time.Time
 }
