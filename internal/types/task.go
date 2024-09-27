@@ -1,17 +1,29 @@
 package types
 
-import "github.com/google/uuid"
+import (
+	"time"
+)
 
 type Priority int
 
 const (
-	Low Priority = iota
+	Lowest Priority = iota
+	Low
 	Medium
 	High
+	Highest
+	Urgent // come up with a better name for this value
 )
 
+type CategoryType string
+
 type Task struct {
-	Id       uuid.UUID
-	Name     string
-	Priority Priority
+	ID                 string
+	Title              string
+	Priority           Priority
+	Completed          bool
+	Category           CategoryType
+	CreatedTimestamp   time.Time
+	CompletedTimestamp *time.Time
+	Deadline           *time.Timer
 }
