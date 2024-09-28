@@ -12,7 +12,7 @@ const (
 	Medium
 	High
 	Highest
-	Urgent // come up with a better name for this value
+	Urgent
 )
 
 type CategoryType string
