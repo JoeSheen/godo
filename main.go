@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/JoeSheen/godo/cmd"
 	"github.com/JoeSheen/godo/internal/sqlite"
@@ -15,36 +16,24 @@ func main() {
 	db, err := sqlite.OpenDBConnection("app.db")
 	checkError(err)
 
-	ts, err := db.GetAllTasks()
+	deadline := time.Now().AddDate(1, 0, 0)
+	id, err := db.CreateTask("test task", 3, "category1", &deadline)
 	checkError(err)
+	fmt.Printf("task with ID: %d created\n", id)
 
-	for _, t := range ts {
-		fmt.Printf("%v\n", t)
+	db.ToggleTaskCompleted(1)
+	db.ToggleTaskCompleted(2)
+
+	t, err := db.GetTaskById(2)
+	checkError(err)
+	fmt.Printf("Task: %v\n", t)
+	
+	tasks, err := db.GetAllTasksByCompletedStatus(true)
+	for _, task := range tasks {
+		fmt.Printf("%v\n", task)
 	}
-
-	t, err := db.GetTaskByID(3)
 	checkError(err)
-	fmt.Printf("\n\n%v\n\n", t)
-
-	//t, err := db.GetTaskByID(2)
-	//if err != nil {
-	//log.Fatal(err)
-	//}
-	//fmt.Printf("%v\n\n", t)
 	cmd.Execute()
-	/*
-		appContext, err := sqlite.OpenDBConnection("app.db")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		deadline := time.Now().AddDate(1, 0, 0)
-		id, err := appContext.CreateTask("test task", "cat1", 5, &deadline)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("%d", id)
-	*/
 }
 
 func checkError(err error) {
