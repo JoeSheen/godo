@@ -132,7 +132,7 @@ func (dc *DatabaseContext) updateCompletedValue(id int) (*types.Task, error) {
 		return nil, err
 	}
 	t.Completed = !t.Completed
-	if (!t.Completed) {
+	if !t.Completed {
 		t.CompletedTimestamp = nil
 	} else {
 		var timestamp = time.Now()

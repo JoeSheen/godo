@@ -27,7 +27,7 @@ func main() {
 	t, err := db.GetTaskById(2)
 	checkError(err)
 	fmt.Printf("Task: %v\n", t)
-	
+
 	tasks, err := db.GetAllTasksByCompletedStatus(true)
 	for _, task := range tasks {
 		fmt.Printf("%v\n", task)
