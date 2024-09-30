@@ -1,4 +1,4 @@
-#Godo
+# Godo
 
 Godo is a command-line task tracker and pomodoro time.
 
