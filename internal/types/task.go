@@ -18,7 +18,7 @@ const (
 type CategoryType string
 
 type Task struct {
-	ID                 int
+	ID                 int64
 	Title              string
 	Priority           Priority
 	Completed          bool
