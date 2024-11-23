@@ -102,12 +102,12 @@ func TestGetAllTasks(t *testing.T) {
 }
 
 func TestGetTaskById(t *testing.T) {
-	tasks := types.Task {
-		ID: 1,
+	tasks := types.Task{
+		ID:       1,
 		Title:    "test task",
 		Priority: 5,
 		Category: "By ID",
-	};
+	}
 
 	dbContext := setUp()
 	defer dropDatabase(dbContext)
@@ -117,26 +117,206 @@ func TestGetTaskById(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error getting task from database: %v", err)
 	}
-		err = testIdValue(1, got.ID)
-		if err != nil {
-			t.Error(err)
-		}
-		err = testStringValues("test task", got.Title)
-		if err != nil {
-			t.Error(err)
-		}
-		err = testPriorityValues(types.Priority(5), got.Priority)
-		if err != nil {
-			t.Error(err)
-		}
-		if got.Completed {
-			t.Errorf("expected completed to be false but was true")
-		}
-		err = testStringValues(string("By ID"), string(got.Category))
-		if err != nil {
-			t.Error(err)
-		}
+	err = testIdValue(1, got.ID)
+	if err != nil {
+		t.Error(err)
+	}
+	err = testStringValues("test task", got.Title)
+	if err != nil {
+		t.Error(err)
+	}
+	err = testPriorityValues(types.Priority(5), got.Priority)
+	if err != nil {
+		t.Error(err)
+	}
+	if got.Completed {
+		t.Errorf("expected completed to be false but was true")
+	}
+	err = testStringValues(string("By ID"), string(got.Category))
+	if err != nil {
+		t.Error(err)
+	}
 
+}
+
+func TestGetAllTasksByCompletedStatus(t *testing.T) {
+	tasks := []types.Task{
+		{
+			Title:    "some task",
+			Priority: 3,
+			Category: "Category 2",
+		},
+		{
+			Title:    "next task",
+			Priority: 2,
+			Category: "Category 3",
+		},
+		{
+			Title:    "final task",
+			Priority: 1,
+			Category: "Category 1",
+		},
+	}
+
+	dbContext := setUp()
+	defer dropDatabase(dbContext)
+	insertTaskTestHelper(t, dbContext, tasks...)
+
+	// Getting all completed tasks from the slice above
+	returnedTasks, err := dbContext.GetAllTasksByCompletedStatus(true)
+	if err != nil {
+		t.Errorf("Error getting all completed tasks from database: %v", err)
+	}
+	if len(returnedTasks) != 0 {
+		t.Errorf("expected=%d, got=%d", len(returnedTasks), 0)
+	}
+
+	// Getting all outstanding tasks from the slice above
+	returnedTasks, err = dbContext.GetAllTasksByCompletedStatus(false)
+	if err != nil {
+		t.Errorf("Error getting all completed tasks from database: %v", err)
+	}
+	if len(returnedTasks) != 3 {
+		t.Errorf("expected=%d, got=%d", len(returnedTasks), 0)
+	}
+}
+
+func TestToggleTaskCompleted(t *testing.T) {
+	task := types.Task{
+		ID:       1,
+		Title:    "toggle task",
+		Priority: 2,
+		Category: "Category 2",
+	}
+
+	dbContext := setUp()
+	defer dropDatabase(dbContext)
+	insertTaskTestHelper(t, dbContext, task)
+
+	err := dbContext.ToggleTaskCompleted(1)
+	if err != nil {
+		t.Errorf("failed to toggle task: %v", err)
+	}
+
+	got, err := dbContext.GetTaskById(1)
+	if err != nil {
+		t.Errorf("Error getting task from database: %v", err)
+	}
+	err = testIdValue(1, got.ID)
+	if err != nil {
+		t.Error(err)
+	}
+	err = testStringValues("toggle task", got.Title)
+	if err != nil {
+		t.Error(err)
+	}
+	err = testPriorityValues(types.Priority(2), got.Priority)
+	if err != nil {
+		t.Error(err)
+	}
+	err = testStringValues(string("Category 2"), string(got.Category))
+	if err != nil {
+		t.Error(err)
+	}
+	if got.Completed != true {
+		t.Error("expected completed flag to be true")
+	}
+	if got.CompletedTimestamp == nil {
+		t.Error("expected completed timestamp to be set")
+	}
+}
+
+func TestDeleteTaskById(t *testing.T) {
+	tasks := types.Task{
+		ID:       1,
+		Title:    "test task",
+		Priority: 5,
+		Category: "By ID",
+	}
+
+	dbContext := setUp()
+	defer dropDatabase(dbContext)
+	
+	// check table is empty at start
+	returnedTasks, err := dbContext.GetAllTasks()
+	if err != nil {
+		t.Errorf("Error getting all tasks from database: %v", err)
+	}
+	if len(returnedTasks) != 0 {
+		t.Errorf("got %d want %d", len(returnedTasks), 0)
+	}
+
+	// inserts a task to be deleted by ID
+	insertTaskTestHelper(t, dbContext, tasks)
+
+	// checks the task has been added
+	returnedTasks, err = dbContext.GetAllTasks()
+	if err != nil {
+		t.Errorf("Error getting all tasks from database: %v", err)
+	}
+	if len(returnedTasks) != 1 {
+		t.Errorf("got %d want %d", len(returnedTasks), 1)
+	}
+
+	// deletes the task by ID
+	err = dbContext.DeleteTaskById(1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// requests all tasks to ensure it is deleted
+	returnedTasks, err = dbContext.GetAllTasks()
+	if err != nil {
+		t.Errorf("Error getting all tasks from database: %v", err)
+	}
+	if len(returnedTasks) != 0 {
+		t.Errorf("got %d want %d", len(returnedTasks), 0)
+	}
+}
+
+func TestDeleteAllTasks(t *testing.T) {
+	tasks := []types.Task{
+		{
+			Title:    "test task 1",
+			Priority: 2,
+			Category: "Category 2",
+		},
+		{
+			Title:    "test task 2",
+			Priority: 3,
+			Category: "Category 3",
+		},
+		{
+			Title:    "test task 3",
+			Priority: 4,
+			Category: "Category 1",
+		},
+	}
+
+	dbContext := setUp()
+	defer dropDatabase(dbContext)
+	insertTaskTestHelper(t, dbContext, tasks...)
+
+	// asserts all three tasks have been added
+	returnedTasks, err := dbContext.GetAllTasks()
+	if err != nil {
+		t.Errorf("Error getting all tasks from database: %v", err)
+	}
+	if len(returnedTasks) != 3 {
+		t.Errorf("got %d want %d", len(returnedTasks), 3)
+	}
+
+	// performs delete all
+	dbContext.DeleteAllTasks()
+
+	// checks that the DB is now empty
+	returnedTasks, err = dbContext.GetAllTasks()
+	if err != nil {
+		t.Errorf("Error getting all tasks from database: %v", err)
+	}
+	if len(returnedTasks) != 0 {
+		t.Errorf("got %d want %d", len(returnedTasks), 0)
+	}
 }
 
 func insertTaskTestHelper(t testing.TB, dc *DatabaseContext, tasks ...types.Task) {
