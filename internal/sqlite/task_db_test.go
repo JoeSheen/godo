@@ -236,7 +236,7 @@ func TestDeleteTaskById(t *testing.T) {
 
 	dbContext := setUp()
 	defer dropDatabase(dbContext)
-	
+
 	// check table is empty at start
 	returnedTasks, err := dbContext.GetAllTasks()
 	if err != nil {
