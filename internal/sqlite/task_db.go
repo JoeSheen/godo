@@ -1,26 +1,11 @@
 package sqlite
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/JoeSheen/godo/internal/types"
 	_ "github.com/mattn/go-sqlite3"
 )
-
-const driverName = "sqlite3"
-
-type DatabaseContext struct {
-	db *sql.DB
-}
-
-func OpenDBConnection(fileName string) (*DatabaseContext, error) {
-	db, err := sql.Open(driverName, fileName)
-	if err != nil {
-		return nil, err
-	}
-	return &DatabaseContext{db: db}, nil
-}
 
 func (dc *DatabaseContext) CreateTask(title string, priority int, category string, deadline *time.Time) (int64, error) {
 	result, err := dc.db.Exec(
